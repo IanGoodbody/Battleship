@@ -17,37 +17,37 @@ public class GameBoard
 		this.colCount = colCount;
 		
 		//create the 2D array of cells
-		cells = new ArrayList<Cell>(rowCount);
-		for(int i = 0; i < rowCount; i++)i
-		{
-			cells.set(i, new ArrayList<Cell>(colCount);
+		this.cells = new ArrayList< ArrayList<Cell> >(this.rowCount);
+		for(int i = 0; i < rowCount; i++){
+			this.cells.add(new ArrayList<Cell>(this.colCount));
 			for(int j = 0; j < colCount; j++)
-				cells.get(i).set(j) = new Cell();
+				this.cells.get(i).add(new Cell());
 		}
 	}
 	
-	public String draw(){
+	public String draw()
+	{
 		String outStr = "";
 
 		// Pretty top bar
-		outStr.concat("+");
+		outStr += '+';
 		for(int i = 0; i < colCount; i++)
-			outStr.concat("-");
-		outStr.concat("+\n");
+			outStr += '-';
+		outStr += "+\n";
 
 		// Boats and stuff
 		for(int i = 0; i < rowCount; i++){
-			outStr.concat("|");
+			outStr += '|';
 			for(int j = 0; j < colCount; j++)
-				ourStr.concat(cells.get(i).get(j).draw());
-			outStr.concat("|\n");
+				outStr += this.cells.get(i).get(j).draw();
+			outStr += "|\n";
 		}
 
 		// Pretty bottom bar
-		outStr.concat("+");
+		outStr += '+';
 		for(int i = 0; i < colCount; i++)
-			outStr.concat("-");
-		outStr.concat("+\n");
+			outStr += '-';
+		outStr += "+\n";
 		
 		return outStr;
 	}
@@ -55,37 +55,43 @@ public class GameBoard
 	//add in a ship if it fully 1) fits on the board and 2) doesn't collide w/
 	//an existing ship.
 	//Returns true on successful addition; false, otherwise
-	public boolean addShip(Ship s, Position sternLocation, HEADING bowDirection){
+	public boolean addShip(Ship s, Position sternLocation, HEADING bowDirection)
+	{
+		Position testLocation = new Position(sternLocation.x, sternLocation.y);
+		ArrayList<Cell> shipCells = new ArrayList<Cell>(s.getLength());
+
 		// Check that the location is valid
-		testLocation = new Position(sternLocation.x, sternLocation.y);
 		for(int i = 0; i < s.getLength(); i++){
 			// Check that the location is on the game board
 			if(testLocation.x < 0 || testLocation.x >= colCount)
 				return false;
 
 			// Check if there is alread a ship at that location
-			else if(cells.get(testLocation.y).get(testLocation.x).getShip() != 
-				null)
+			else if(this.cells.get(testLocation.y).get(testLocation.x).getShip() != null)
 				return false;
 
+			shipCells.add(this.cells.get(testLocation.y).get(testLocation.x));
+			shipCells.get(i).setShip(s);
 			// Move the loacation by the heading, assume 0,0 is top left
-			switch(bowDirect){
-				case HEADING.NORTH:
+			switch(bowDirection){
+				case NORTH:
 					testLocation.y--;
 					break;
-				case HEADING.SOUTH:
+				case SOUTH:
 					testLocation.y++;
 					break;
-				case HEADING.EAST:
+				case EAST:
 					testLocation.x++;
 					break;
-				case HEADING.WEST:
+				case WEST:
 					testLocation.x--;
 					break;
 			}
 		}
 		// If the for loop completes, the location is valid, add the ship
-		myShips.add(s);
+		s.setPosition(shipCells);
+		this.myShips.add(s);
+		return true;
 	}
 	
 	//Returns A reference to a ship, if that ship was struck by a missle.
@@ -94,7 +100,14 @@ public class GameBoard
 	//Ensure you handle missiles that may fly off the grid
 	public Ship fireMissle( Position coordinate )
 	{
-		
+		if(coordinate.x < 0 || coordinate.x >= colCount)
+			return null;
+		else if(coordinate.y < 0 || coordinate.y >= rowCount)
+			return null;
+
+		Cell target = this.cells.get(coordinate.y).get(coordinate.x);
+		target.hasBeenStruckByMissile(true);
+		return target.getShip();
 	}
 	
 	//Here's a simple driver that should work without touching any of the code below this point

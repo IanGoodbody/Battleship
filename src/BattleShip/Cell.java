@@ -11,11 +11,12 @@ public class Cell
 	
 	public boolean hasBeenStruckByMissile()
 	{
-		return this.struckByMissile;
+		return this.struckByMissle;
 	}
 	
 	public void hasBeenStruckByMissile( boolean wasStruck )
 	{	
+		this.struckByMissle = wasStruck;
 	}
 	
 	public char draw()
