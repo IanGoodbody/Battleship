@@ -16,6 +16,13 @@ public class GameManager
 	
 	public GameManager()
 	{		
+		try{
+			this.listener = new ServerSocket(10000);
+		}
+		catch (IOException e){
+			System.out.println("Server Socket initialization failed.");
+			e.printStackTrace();
+		}
 	}
 	
 	//Returns a client reference to the opponent. This way, we can inspect attributes
@@ -23,6 +30,11 @@ public class GameManager
 	//so a client is able to use this method to get a reference to his opponent
 	public Client getOpponent( Client me )
 	{
+		// Assume only two players
+		if(clients.get(0).equals(me))
+			return clients.get(1);
+		else
+			return clients.get(0);
 	}
 	
 	//In a asychronous nature, begin playing the game. This should only occur after 
@@ -45,6 +57,15 @@ public class GameManager
 	//Don't forget about try/finally blocks, if needed
 	boolean waitFor2PlayersToConnect() throws IOException
 	{
+		Socket p1Socket = this.listener.accept();
+		this.clients.add(new Client( new BufferedReader( new InputStreamReader(p1Socket.getInputStream())),
+			new PrintWriter(p1Socket.getOutputStream(), true), this ));
+
+		Socket p2Socket = this.listener.accept();
+		this.clients.add(new Client( new BufferedReader( new InputStreamReader(p2Socket.getInputStream())),
+			new PrintWriter(p2Socket.getOutputStream(), true), this ));
+
+		return true;
 	}
 	
 	//let players initialize their name, and gameboard here. This should be done asynchronously

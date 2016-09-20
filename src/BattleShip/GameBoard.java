@@ -28,26 +28,27 @@ public class GameBoard
 	public String draw()
 	{
 		String outStr = "";
+		String nl = System.getProperty("line.separator");
 
 		// Pretty top bar
 		outStr += '+';
 		for(int i = 0; i < colCount; i++)
 			outStr += '-';
-		outStr += "+\n";
+		outStr += '+' + nl;
 
 		// Boats and stuff
 		for(int i = 0; i < rowCount; i++){
 			outStr += '|';
 			for(int j = 0; j < colCount; j++)
 				outStr += this.cells.get(i).get(j).draw();
-			outStr += "|\n";
+			outStr += '|' + nl;
 		}
 
 		// Pretty bottom bar
 		outStr += '+';
 		for(int i = 0; i < colCount; i++)
 			outStr += '-';
-		outStr += "+\n";
+		outStr += '+' + nl;
 		
 		return outStr;
 	}
@@ -65,14 +66,15 @@ public class GameBoard
 			// Check that the location is on the game board
 			if(testLocation.x < 0 || testLocation.x >= colCount)
 				return false;
+			if(testLocation.y < 0 || testLocation.y >= rowCount)
+				return false;
 
 			// Check if there is alread a ship at that location
 			else if(this.cells.get(testLocation.y).get(testLocation.x).getShip() != null)
 				return false;
 
-			shipCells.add(this.cells.get(testLocation.y).get(testLocation.x));
-			shipCells.get(i).setShip(s);
 			// Move the loacation by the heading, assume 0,0 is top left
+			shipCells.add(this.cells.get(testLocation.y).get(testLocation.x));
 			switch(bowDirection){
 				case NORTH:
 					testLocation.y--;
@@ -89,6 +91,8 @@ public class GameBoard
 			}
 		}
 		// If the for loop completes, the location is valid, add the ship
+		for(int i = 0; i < s.getLength(); i++)
+			shipCells.get(i).setShip(s);
 		s.setPosition(shipCells);
 		this.myShips.add(s);
 		return true;
@@ -129,6 +133,12 @@ public class GameBoard
 		else
 			System.out.println( "Failed to add " + s.getName() );
 		
+		s = new Lifeboat( "Diggny" );
+		if( b.addShip(s, new Position(7,3), HEADING.NORTH ) )
+			System.out.println( "Added " + s.getName() + "Location is " );
+		else
+			System.out.println( "Failed to add " + s.getName() );
+		
 		System.out.println( b.draw() );
 		
 		b.fireMissle( new Position(3,5) );
@@ -137,6 +147,8 @@ public class GameBoard
 		System.out.println( b.draw() );
 		b.fireMissle( new Position(3,3) );
 		System.out.println( b.draw() );
+
+		b.fireMissle( new Position(7,3) );
 		
 		b.fireMissle( new Position(0,6) );
 		b.fireMissle( new Position(1,6) );
@@ -146,6 +158,13 @@ public class GameBoard
 		
 		b.fireMissle( new Position(6,6) );
 		System.out.println( b.draw() );
+
+		for(int i = 0; i < b.myShips.size(); i++){
+			if(b.myShips.get(i).isAlive())
+				System.out.println(b.myShips.get(i).getName() + " has survived!");
+			else
+				System.out.println(b.myShips.get(i).getName() + " is lost.");
+		}
 	}
 
 }
