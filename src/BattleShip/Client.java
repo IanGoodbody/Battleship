@@ -35,8 +35,8 @@ public class Client
 		while(true)
 		{
 			this.out.println( "------------------------" );
-			this.out.println( "Target Board:\n" + this.targets.draw() );
-			this.out.println( "Your Ships:\n" + this.board.draw() );
+			this.out.println( "Target Board:"+ NEWL + this.targets.draw() );
+			this.out.println( "Your Ships:" + NEWL + this.board.draw() );
 			this.out.println( "   Waiting for Next Command...\n\n" );
 			this.out.flush();
 
