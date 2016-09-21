@@ -71,6 +71,11 @@ public class GameManager
 	//let players initialize their name, and gameboard here. This should be done asynchronously
 	void initPlayers() throws IOException
 	{
+		clients.parallelStream().forEach( client -> 
+		{
+			try{ client.initPlayer(); }
+			catch( IOException e ) { e.printStackTrace(); } 
+		} );
 	}
 	
 	

@@ -32,15 +32,30 @@ public class Client
 		this.out.println( "Fires a missile at coordinate x=2, y=4." );
 		
 		// put Code Here to process in game commands, after each command, print the target board and game board w/ updated state 
-		//while(false)
+		while(true)
 		{
 			this.out.println( "------------------------" );
-			this.out.println( "Target Board:" + this.targets.draw() );
-			this.out.println( "Your Ships: " + this.board.draw() );
+			this.out.println( "Target Board:\n" + this.targets.draw() );
+			this.out.println( "Your Ships:\n" + this.board.draw() );
 			this.out.println( "   Waiting for Next Command...\n\n" );
 			this.out.flush();
-			
+
+			// Process user input
+			this.processCommand();
 			//Perform test here to see if we have won or lost
+			if(this.allMyShipsAreDestroyed()){
+				this.out.println(this.man.getOpponent(this).getName() + " has destroyed all your ships; you lose.");
+				this.out.println("You may want to try somethime more your speed, like Candyland.");
+				this.out.flush();
+				break;
+			}
+			else if(this.allEnemyShipsAreDestroyed()){
+				this.out.println("Congratulations you have destroyed all of " +
+					this.man.getOpponent(this).getName() + "'s ships.");
+				this.out.println("You won!");
+				this.out.flush();
+				break;
+			}
 		}
 	}
 	
@@ -66,32 +81,29 @@ public class Client
 	{
 		String cmd = this.in.readLine();
 		if(cmd.length() == 0)
-			return false
+			return false;
 
-		if(cmd.toUpperCase().startsWith("F"){
+		if(cmd.toUpperCase().startsWith("F")){
 			// Check and process the fire command
-			String coords = cmd.split(" ");
+			String[] coords = cmd.split(" ");
 			if(coords.length != 3)
 				return false;
 			if(!coords[1].matches("\\d+"))
 				return false;
-			if(!corods[2].matches("\\d+"))
+			if(!coords[2].matches("\\d+"))
 				return false;
 
-			return this.processFireCmd( new String[] = {coords[1], coords[2]} );
+			String[] loc = {coords[1], coords[2]};
+			return this.processFireCmd(loc);
 		}
-		else if(cmd.toUpperCase().startsWith("C"){
-			if(cmd.length < 3)
+		else if(cmd.toUpperCase().startsWith("C")){
+			if(cmd.length() < 3)
 				return false;
 
-			return processChatCommand( cmd.subString(2) );
+			return processChatCmd( cmd.substring(2) );
 		}
-		else if(cmd.toUpperCase().startsWith("D"){
-			this.out.println( "------------------------" );
-			this.out.println( "Target Board:" + this.targets.draw() );
-			this.out.println( "Your Ships: " + this.board.draw() );
-			this.out.println( "   Waiting for Next Command...\n\n" );
-			this.out.flush();
+		else if(cmd.toUpperCase().startsWith("D")){
+			// The main game loop will do this once this function returns.
 			return true;
 		}
 		else
@@ -102,16 +114,17 @@ public class Client
 	//When a fire command is typed, this method parses the coordinates and launches a missle at the enemy
 	boolean processFireCmd( String [] s )
 	{
-		coordinate = new Position(s[0], s[1]);
-		this.target.fireMissile(coordinate); 
-		Ship hit = this.man.getOpponent(this).board.fireMissile(coordinate);
+		Position coordinate = new Position(Integer.parseInt(s[0]), Integer.parseInt(s[1]));
+		this.targets.fireMissle(coordinate); 
+		Ship hit = this.man.getOpponent(this).board.fireMissle(coordinate);
 		if(hit != null){
-			this.out.println("Captain! Direct hit on the" + hit.getName());
-			this.flush()
+			this.targets.cells.get(coordinate.y).get(coordinate.x).setShip(hit);
+			this.out.println("Captain! Direct hit on the " + hit.getName());
+			this.out.flush();
 		}
 		else{
 			this.out.println("It's a miss Captain, but I think we at least spooked a shark...");
-			this.flush()
+			this.out.flush();
 		}
 		return true;
 	}
@@ -132,6 +145,8 @@ public class Client
 		this.out.println("What... is your name?");
 		this.out.flush();
 		this.name = in.readLine();
+		System.out.println(this.name + " is connected.");
+
 		//2.Print out instructions
 		
 //Here's some nice instructions to show a client		
@@ -150,10 +165,14 @@ public class Client
 			out.println("Enter Ship " + i + " information:");
 			out.flush();
 			String[] fields = in.readLine().split(" ", 5);
+			System.out.println(this.name + " entered:");
+			for(int ii = 0 ; ii < fields.length; ii++)
+				System.out.println("\t" + fields[ii]);
 			
 			if(fields.length < 5){
 				this.out.println("Missing one or more arguments, please try again.");
 				this.out.flush();
+				System.out.println(this.name + " is missing one or more arguments");
 				continue;
 			}
 			
@@ -177,6 +196,7 @@ public class Client
 						this.out.println("	L => Lifeboat");
 						this.out.println("Please re-enter ship type:");
 						this.out.flush();
+						System.out.println(this.name + " gave a bad ship ID");
 						fields[0] = in.readLine();
 						break;
 				}
@@ -204,17 +224,19 @@ public class Client
 				else{
 					this.out.println(fields[1] + " is not an integer value, try again");
 					this.out.flush();
+					System.out.println(this.name + " gave a bad X coordinate");
 					fields[1] = in.readLine();
 				}
 			}
 			while(true){
 				if(fields[2].matches("\\d+")){
-					y = Integer.parseInt(fields[1]);
+					y = Integer.parseInt(fields[2]);
 					break;
 				}
 				else{
-					this.out.println(fields[1] + " is not an integer value, try again");
+					this.out.println(fields[2] + " is not an integer value, try again");
 					this.out.flush();
+					System.out.println(this.name + " gave a bad Y coordinate");
 					fields[2] = in.readLine();
 				}
 			}
@@ -241,6 +263,7 @@ public class Client
 						out.println("'N', 'S', 'E', or 'W'");
 						out.println("Please re-enter ship heading:");
 						out.flush();
+						System.out.println(this.name + " gave a bad heading");
 						fields[3] = in.readLine();
 				}
 			}
@@ -264,6 +287,7 @@ public class Client
 			if( !this.board.addShip(s, sPos, head) ){
 				this.out.println("The ship could not be placed, try again.");
 				this.out.flush();
+				System.out.println(this.name + "'s ship " + s.getName() + " could not be added.");
 				continue;
 			}
 			else{
